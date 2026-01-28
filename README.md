@@ -29,10 +29,10 @@ This approach mirrors real-world product teams and serves as **hands-on training
 
 ## 3. Team Structure
 
-* **Project Manager (PM)** – Planning, coordination, review, and documentation
+* **Project Manager (PM)** – Planning, coordination, review, repository management, and documentation
 * **Developer 1** – Time-In / Time-Out (DTR Core)
-* **Developer 2** – Weekly Journal Report System
-* **Developer 3** – Admin Review & Certification
+* **Developer 2** – Weekly Journal Report System (JSON-based entries)
+* **Developer 3** – Admin Review, Certification & Audit Logs
 * **Developer 4** – Export & Reporting Module
 
 ---
@@ -92,7 +92,7 @@ Weekly Journal Submission & Management
 ### Developer 3 – Admin Review & Certification
 
 **Feature Ownership:**
-Admin Review, Status Tracking, and Certification
+Admin Review, Status Tracking, Certification, and Audit Logging
 
 **Responsibilities:**
 
@@ -102,13 +102,16 @@ Admin Review, Status Tracking, and Certification
 * Apply certification lock to finalized reports
 * Create read-only views for certified reports
 * Enforce role-based access control (Admin only actions)
-* Write tests for permissions and certification rules
+* Implement **audit logs** for key actions (examples: report submitted, report viewed, report certified, time-in, time-out)
+* Write tests for permissions, certification rules, and audit log creation
 
 **Training Focus:**
 
 * Role-based access control
 * Admin workflows in Filament
 * Secure file uploads
+* Audit logging patterns
+* Audit trail implementation
 
 ---
 
@@ -172,10 +175,49 @@ Although each feature is owned independently, they integrate as follows:
 * Weekly reports reference internship activity
 * Admin certification validates records
 * Export module compiles verified data
+* Audit logs capture key actions across modules
 
 ---
 
-## 7. Benefits of This Structure
+## 7. Weekly Report JSON Schema (Final Contract)
+
+Weekly report answers are stored in `weekly_reports.entries` as JSON.
+
+**Important:** The keys below are considered a shared contract and should not be renamed without coordination.
+
+```json
+{
+  "week_focus": "string",
+  "topics_learned": ["string"],
+  "outputs_links": [
+    {
+      "url": "string",
+      "description": "string"
+    }
+  ],
+  "what_built": "string",
+  "decisions_reasoning": {
+    "decision_1": "string",
+    "decision_2": "string"
+  },
+  "challenges_blockers": "string",
+  "improve_next_time": {
+    "improvement_1": "string",
+    "improvement_2": "string"
+  },
+  "key_takeaway": "string"
+}
+```
+
+Notes:
+
+* `topics_learned` is an array to support multiple topics.
+* `outputs_links` is an array of objects for export-friendly structure.
+* Decisions and improvements are grouped for clarity.
+
+---
+
+## 8. Benefits of This Structure
 
 * Encourages full-stack learning
 * Clear accountability per feature
@@ -188,3 +230,40 @@ Although each feature is owned independently, they integrate as follows:
 ## 8. Conclusion
 
 This feature-based task division ensures that each intern developer gains meaningful hands-on experience while maintaining a structured, manageable project workflow. The approach balances **technical training** with **proper project management practices**.
+
+---
+
+## Appendix: Weekly Report JSON Schema (Final Contract)
+
+The weekly report content is stored in a single JSON column (`weekly_reports.entries`). The following schema is the **final agreed contract** and should not be changed without coordination.
+
+```json
+{
+  "week_focus": "string",
+  "topics_learned": ["string"],
+  "outputs_links": [
+    {
+      "url": "string",
+      "description": "string"
+    }
+  ],
+  "what_built": "string",
+  "decisions_reasoning": {
+    "decision_1": "string",
+    "decision_2": "string"
+  },
+  "challenges_blockers": "string",
+  "improve_next_time": {
+    "improvement_1": "string",
+    "improvement_2": "string"
+  },
+  "key_takeaway": "string"
+}
+```
+
+### Notes
+
+* All keys are required
+* Arrays may be empty but must exist
+* Certified reports are read-only
+* Exports must read data strictly from this schema
