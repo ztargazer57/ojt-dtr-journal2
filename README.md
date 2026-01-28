@@ -29,11 +29,11 @@ This approach mirrors real-world product teams and serves as **hands-on training
 
 ## 3. Team Structure
 
-* **Project Manager (PM)** – Planning, coordination, review, repository management, and documentation
-* **Developer 1** – Time-In / Time-Out (DTR Core)
-* **Developer 2** – Weekly Journal Report System (JSON-based entries)
-* **Developer 3** – Admin Review, Certification & Audit Logs
-* **Developer 4** – Export & Reporting Module
+* **Project Manager (Kenth)** – Planning, coordination, review, repository management, and documentation
+* **Developer (Jerwin)1** – Time-In / Time-Out (DTR Core)
+* **Developer (Ron)2** – Weekly Journal Report System (JSON-based entries)
+* **Developer (Melvin)3** – Admin Review, Certification & Audit Logs
+* **Developer 4 (John Mhell)** – Export & Reporting Module
 
 ---
 
