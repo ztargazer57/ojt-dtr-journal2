@@ -12,21 +12,20 @@ class ShiftSeeder extends Seeder
      */
     public function run(): void
     {
-        //
         Shift::create([
             'name' => 'Day Shift',
-            'start_time' => '08:00:00',
-            'end_time' => '17:00:00',
-            'break_start' => '12:00:00',
-            'break_end' => '13:00:00',
+            'session_1_start' => '08:00:00', // 8 AM
+            'session_1_end'   => '12:00:00', // 12 PM
+            'session_2_start' => '13:00:00', // 1 PM
+            'session_2_end'   => '17:00:00', // 5 PM
         ]);
 
         Shift::create([
             'name' => 'Night Shift',
-            'start_time' => '20:00:00',
-            'end_time' => '05:00:00',
-            'break_start' => '00:00:00',
-            'break_end' => '01:00:00',
+            'session_1_start' => '20:00:00', // 8 PM
+            'session_1_end'   => '00:00:00', // Midnight
+            'session_2_start' => '01:00:00', // 1 AM
+            'session_2_end'   => '05:00:00', // 5 AM
         ]);
     }
 }

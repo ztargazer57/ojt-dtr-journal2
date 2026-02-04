@@ -65,7 +65,7 @@ class ListDailyTimeRecords extends ListRecords
         ];
     }
 
-    // Helper to keep code clean
+    // function to save the log to database
     protected function saveLog(int $type): void
     {
         $user = Auth::user();
