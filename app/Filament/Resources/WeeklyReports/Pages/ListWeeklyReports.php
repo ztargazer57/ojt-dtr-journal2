@@ -25,7 +25,7 @@ class ListWeeklyReports extends ListRecords
             //     ->modalHeading('Export Weekly Reports')
             //     ->modalDescription('Keep in mind this will only export [certified] reports'),
                 Action::make("Export")
-                ->label("Export Weekly Journal")
+                ->label("Export")
                 ->action(function ($reports) {
                     app(WeeklyReportsExportService::class)
                     ->exportCertifiedReports($reports);

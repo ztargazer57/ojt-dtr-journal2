@@ -6,13 +6,16 @@ use App\Models\WeeklyReports;
 use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\IOFactory;
 use Illuminate\Support\Facades\Storage;
+use PhpOffice\PhpWord\Style\Cell;
 use ZipArchive;
+use DateTime;
 
 class WeeklyReportsExportService
 {
     public function exportCertifiedReports($reports)
     {
         \PhpOffice\PhpWord\Settings::setOutputEscapingEnabled(true);
+        \PhpOffice\PhpWord\Settings::setDefaultPaper('Letter');
 
         $zip = new ZipArchive();
         $zipFileName = 'weekly_reports.zip';
@@ -28,23 +31,53 @@ class WeeklyReportsExportService
         foreach ($reports as $report) {
 
             $php = new PhpWord();
-            $php->setDefaultFontName('Arial');
+            $php->setDefaultFontName('Tahoma');
             $php->setDefaultFontSize(11);
+            $paragraphStyle = array(
+                'lineHeight' => 1.5,
+                'spaceBefore' => 0, 
+                'spaceAfter'  => 0, 
+            );
 
             $section = $php->addSection();
+            $textRun = $section->addTextRun();
 
-            $titleStyle = ['alignment' => 'center', 'bold' => true, 'size' => 14];
-            $sectionTitleStyle = ['bold' => true];
-            $labelStyle = ['bold' => true];
+            $titleStyle = ['alignment' => 'center', 'size' => 12];
+            $sectionTitleStyle = ['name' => 'Tahoma'];
+            $labelStyle = ['color' => '#092b56', 'bold' => true];
 
             // Title
-            $section->addText('OJT WEEKLY REPORT', $titleStyle);
-            $section->addTextBreak(1);
+            $section->addText('OJT WEEKLY REPORT', $titleStyle, ['align' => 'center']);
+            $section->addTextBreak(2);
 
             // Header
-            $section->addText("Week of: {$report->week_start}", ['underline' => 'single']);
-            $section->addText("Name: {$report->user->name}", ['underline' => 'single']);
-            $section->addTextBreak(1);
+
+            $tableStyle = [
+                'borderSize' => 0,
+                'borderColor' => 'FFFFFF',
+            ];
+            $table = $section->addTable($tableStyle);
+            $week_start = new DateTime($report->week_start);
+            $week_end = new DateTime($report->week_end);
+
+            $formatted_week_start = $week_start->format('F d');
+            $formatted_week_end = $week_end->format('F d Y');
+
+
+            $table->addRow();
+
+            $table->addCell(4500)->addText(
+                "Week of: {$formatted_week_start} to {$formatted_week_end}",
+                ['name' => 'Tahoma', 'size' => 11, 'underline' => 'single'],
+                ['alignment' => 'left']
+            );
+
+            $table->addCell(4500)->addText(
+                "Name: {$report->user->name}",
+                ['name' => 'Tahoma', 'size' => 11, 'underline' => 'single'],
+                ['alignment' => 'right']
+            );
+            $section->addTextBreak(2);
 
             $entries = $report->entries;
 
@@ -52,67 +85,77 @@ class WeeklyReportsExportService
                 $entries = json_decode($entries, true) ?? [];
             }
 
-                // WEEK FOCUS 
-                $section->addText('1. WEEK FOCUS', $sectionTitleStyle);
-                $section->addText('What was your main focus this week?');
-                $section->addTextBreak(1);
-                $section->addText('Answer:', $labelStyle);
-                $section->addText($entries['week_focus']);
-                $section->addTextBreak(2);
+            // WEEK FOCUS 
+            $section->addText('1. WEEK FOCUS', $sectionTitleStyle,$paragraphStyle);
+            $section->addText('     What was your main focus this week?', null , $paragraphStyle);
+            $section->addTextBreak(1);
+            $section->addText('Answer:', $labelStyle,$paragraphStyle);
+            $section->addText("     {$entries['week_focus']}", null, $paragraphStyle);
+            $section->addTextBreak(2);
 
 
-                // TOPICS & CONCEPTS LEARNED 
-                    $section->addText('2. TOPICS & CONCEPTS LEARNED', $sectionTitleStyle);
-                    $section->addText('Topics:', $labelStyle);
-                    foreach ($entries['topics_learned'] as $topic) {
-                        $section->addText(
-                            htmlspecialchars($topic, ENT_QUOTES | ENT_XML1, 'UTF-8')
-                        );
-                    }
+            // TOPICS & CONCEPTS LEARNED 
+            $section->addText('2. TOPICS & CONCEPTS LEARNED', $sectionTitleStyle,$paragraphStyle);
+            $section->addText("     List the topics, tools, or concepts you worked on this week.", null ,$paragraphStyle);
+            $section->addTextBreak(1);
+            $section->addText('Topics:', $labelStyle,$paragraphStyle);
+            foreach ($entries['topics_learned'] as $topic) {
+                $section->addText(
+                    "       - ".htmlspecialchars($topic, ENT_QUOTES | ENT_XML1, 'UTF-8'), null, $paragraphStyle
+                );
+            }
+            $section->addTextBreak(2);
 
-                // OUTPUTS & LINKS
-                $section->addTextBreak(1);
-                    $section->addText('3. OUTPUTS & LINKS', $sectionTitleStyle);
-                    foreach ($entries['outputs_links'] as $link) {
-                        if (isset($link['url'])) {
-                            $section->addLink(
-                                $link['url'],$link['url']
-                            );
-                            $section->addText($link['description']);
-                        }
-                        $section->addTextBreak();
-                    }
+            // OUTPUTS & LINKS;
+            $section->addText('3. OUTPUTS & LINKS', $sectionTitleStyle,$paragraphStyle);
+            foreach ($entries['outputs_links'] as $link) {
+                if (isset($link['url'])) {
+                    $section->addLink(
+                        $link['url'],
+                        "     URL: ".$link['url']
+                    );
+                    $section->addText("     Description: ".$link['description'],null,$paragraphStyle);
+                }
+                $section->addTextBreak();
+            }
+            $section->addTextBreak(2);
 
-                // WHAT YOU BUILT OR DESIGNED
-                $section->addText('4. WHAT YOU BUILT OR DESIGNED', $sectionTitleStyle);
-                $section->addText('Describe what you created and what problem it was meant to solve.', $sectionTitleStyle);
-                $section->addText('Answer:', $labelStyle);
-                $section->addText($entries['what_built']);
-                $section->addTextBreak(2);
-                 
+            // WHAT YOU BUILT OR DESIGNED
+            $section->addText('4. WHAT YOU BUILT OR DESIGNED', $sectionTitleStyle,$paragraphStyle);
+            $section->addText('     Describe what you created and what problem it was meant to solve.', $sectionTitleStyle,$paragraphStyle);
+            $section->addTextBreak(1);
+            $section->addText('Answer:', $labelStyle);
+            $section->addText("     ".$entries['what_built'],null,$paragraphStyle);
+            $section->addTextBreak(2);
 
-                // DECISIONS & REASONING
-                $section->addTextBreak(1);
-                    $section->addText('5. DECISIONS & REASONING', $sectionTitleStyle);
-                    $section->addText('Decision 1:', $labelStyle);
-                    $section->addText($entries['decisions_reasoning']['decision_1'] ?? '');
-                    $section->addText('Decision 2:', $labelStyle);
-                    $section->addText($entries['decisions_reasoning']['decision_2'] ?? '');      
 
-                 // CHALLENGES & BLOCKERS
-                 $section->addText('6. CHALLENGES & BLOCKERS ', $sectionTitleStyle);
-                 $section->addText('What was difficult or confusing? What slowed you down?', $sectionTitleStyle);
-                 $section->addText('Answer:', $labelStyle);
-                 $section->addText($entries['challenges_blockers']);
-                 $section->addTextBreak(2);
+            // DECISIONS & REASONING
+            $section->addText('5. DECISIONS & REASONING', $sectionTitleStyle,$paragraphStyle);
+            $section->addText('     Explain at least two decisions you made this week.', $sectionTitleStyle,$paragraphStyle);
+            $section->addTextBreak(1);
+            $section->addText('Decision 1:', $labelStyle,$paragraphStyle);
+            $section->addText("     ".$entries['decisions_reasoning']['decision_1'] ?? '',null,$paragraphStyle);
+            $section->addText('Decision 2:', $labelStyle);
+            $section->addText("     ".$entries['decisions_reasoning']['decision_2'] ?? '',null,$paragraphStyle);
+            $section->addTextBreak(2);
 
-                 // WHAT YOU BUILT OR DESIGNED
-                 $section->addText('7. WHAT YOU’D IMPROVE NEXT TIME', $sectionTitleStyle);
-                 $section->addText('If you had more time, what would you improve or change?', $sectionTitleStyle);
-                 $section->addText('Decision 1:', $labelStyle);
-                 $section->addText($entries['improve_next_time']['improvement_1'] ?? '');
-                 $section->addText('Decision 2:', $labelStyle);
-                 $section->addText($entries['improve_next_time']['improvement_2'] ?? '');  
+            // CHALLENGES & BLOCKERS
+            $section->addText('6. CHALLENGES & BLOCKERS ', $sectionTitleStyle,$paragraphStyle);
+            $section->addText('     What was difficult or confusing? What slowed you down?', $sectionTitleStyle,$paragraphStyle);
+            $section->addTextBreak(1);
+            $section->addText('Answer:', $labelStyle,$paragraphStyle);
+            $section->addText("     ".$entries['challenges_blockers'],null,$paragraphStyle);
+            $section->addTextBreak(2);
+
+            // WHAT YOU BUILT OR DESIGNED
+            $section->addText('7. WHAT YOU’D IMPROVE NEXT TIME', $sectionTitleStyle,$paragraphStyle);
+            $section->addText('     If you had more time, what would you improve or change?', $sectionTitleStyle,$paragraphStyle);
+            $section->addTextBreak(1);
+            $section->addText('Decision 1:', $labelStyle);
+            $section->addText("     ".$entries['improve_next_time']['improvement_1'] ?? '',null,$paragraphStyle);
+            $section->addText('Decision 2:', $labelStyle);
+            $section->addText("     ".$entries['improve_next_time']['improvement_2'] ?? '',null,$paragraphStyle);
+            $section->addTextBreak(2);
 
             // Save
             $safeName = preg_replace('/[^A-Za-z0-9 _-]/', '', $report->user->name);

@@ -70,7 +70,7 @@ class WeeklyReportsTable
             ->recordActions([
             ])
             ->toolbarActions([
-
+                BulkActionGroup::make([])
             ]);
     }
 }
