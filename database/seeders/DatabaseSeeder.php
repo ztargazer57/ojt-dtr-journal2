@@ -33,5 +33,12 @@ class DatabaseSeeder extends Seeder
             'email_verified_at' => now(),
             'role' => 'intern',
         ]);
+
+        $this->call([
+            ShiftSeeder::class,
+            UserSeeder::class,
+            TestDtrLogsSeeder::class,
+            WeeklyReportsSeeder::class
+        ]);
     }
 }
