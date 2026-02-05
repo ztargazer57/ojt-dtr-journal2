@@ -4,6 +4,7 @@ namespace App\Filament\Resources\WeeklyReports;
 
 
 use App\Filament\Resources\WeeklyReports\Pages\ListWeeklyReports;
+use App\Filament\Resources\WeeklyReports\Pages\ViewWeeklyReports;
 use App\Filament\Resources\WeeklyReports\Schemas\WeeklyReportsForm;
 use App\Filament\Resources\WeeklyReports\Schemas\WeeklyReportsInfolist;
 use App\Filament\Resources\WeeklyReports\Tables\WeeklyReportsTable;
@@ -48,6 +49,7 @@ class WeeklyReportsResource extends Resource
     {
         return [
             'index' => ListWeeklyReports::route('/'),
+            'view' => ViewWeeklyReports::route('/{record}'),
         ];
     }
 }

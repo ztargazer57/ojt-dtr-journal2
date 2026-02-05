@@ -1,0 +1,41 @@
+<?php
+namespace App\Filament\Actions;
+
+use App\Services\Exports\WeeklyReportsExportService;
+use App\Models\WeeklyReports;
+use Filament\Notifications\Notification;
+use Filament\Actions\Action;
+use Filament\Support\Enums\TextSize;
+use Illuminate\Support\HtmlString;
+
+class ExportCertifiedReportsAction {
+    public static function make (string $name = 'export'): Action {
+        return Action::make($name)
+        ->icon('heroicon-o-archive-box-arrow-down')
+        ->color('success')
+        ->disabled(fn ($record) => $record->status === 'pending')        ->requiresConfirmation()
+        ->tooltip( fn($record) => $record->status === 'pending' || $record->status === 'viewed' ? 'Cannot export when not certified' : null)
+        ->modalHeading('Export Weekly Reports')
+        ->modalDescription(new HtmlString('Keep in mind this will only export <span style="color:rgb(51, 255, 0);">certified</span> reports'))
+    ->action(function (WeeklyReports $report) {
+        if ($report->status === !'certified') {
+            Notification::make()
+                ->title('Cannot Export File')
+                ->body('This report not certified.')
+                ->warning()
+                ->send();
+
+            return;
+        }
+
+        app(WeeklyReportsExportService::class)
+            ->exportCertifiedReports(collect([$report]));
+        Notification::make()
+            ->title('File Successfully Exported!')
+            ->icon('heroicon-o-document-text')
+            ->iconColor('success')
+            ->success()
+            ->send();
+    });
+    }
+}

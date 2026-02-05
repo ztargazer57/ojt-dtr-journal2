@@ -2,7 +2,14 @@
 
 namespace App\Filament\Resources\WeeklyReports\Tables;
 
+use Filament\Actions\BulkAction;
+use App\Services\Exports\WeeklyReportsExportService;
 use Filament\Actions\BulkActionGroup;
+use Filament\Notifications\Notification;
+use Filament\Notifications\Collection;
+use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\DatePicker;
+use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -12,8 +19,8 @@ class WeeklyReportsTable
     public static function configure(Table $table): Table
     {
         return $table
-        ->heading('Weekly Reports')
-        ->description('Containing a lists of user weekly reports.')
+            ->heading('Weekly Reports')
+            ->description('Containing a lists of user weekly reports.')
             ->columns([
                 TextColumn::make('user.name')
                     ->searchable(),
@@ -65,12 +72,61 @@ class WeeklyReportsTable
                         'certified' => 'Certified',
                         'pending' => 'Pending',
                         'viewed' => 'Viewed',
+                    ]),
+                Filter::make('week_range')
+                    ->form([
+                        DatePicker::make('from')
+                            ->label('From'),
+                        DatePicker::make('until')
+                            ->label('Until'),
                     ])
+                    ->query(function (Builder $query, array $data) {
+                        return $query
+                            ->when(
+                                $data['from'] ?? null,
+                                fn(Builder $query, $date) =>
+                                $query->whereDate('week_start', '>=', $date)
+                            )
+                            ->when(
+                                $data['until'] ?? null,
+                                fn(Builder $query, $date) =>
+                                $query->whereDate('week_end', '<=', $date)
+                            );
+                    }),
             ])
             ->recordActions([
             ])
             ->toolbarActions([
-                BulkActionGroup::make([])
+                BulkActionGroup::make([
+                    BulkAction::make('exportSelected')
+                        ->label("Export Selected")
+                        ->icon('heroicon-o-archive-box-arrow-down')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Export Weekly Reports')
+                        ->modalDescription(new \Illuminate\Support\HtmlString('Keep in mind this will only export <span style="color:rgb(51, 255, 0);">certified</span> reports'))
+                        ->action(function (\Illuminate\Support\Collection $reports) {
+                            $certified = $reports->where('status', 'certified');
+
+                            if ($certified->isEmpty()) {
+                                Notification::make()
+                                    ->title('Nothing to export')
+                                    ->body('The selected reports are not certified.')
+                                    ->warning()
+                                    ->send();
+
+                                return;
+                            }
+
+                            app(WeeklyReportsExportService::class)
+                                ->exportCertifiedReports($reports);
+                            Notification::make()
+                                ->title('Export Started')
+                                ->body('Your Export file is being generated...')
+                                ->success()
+                                ->send();
+                        })
+                ])
             ]);
     }
 }
