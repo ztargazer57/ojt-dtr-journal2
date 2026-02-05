@@ -1,5 +1,11 @@
 <?php
 
+
+use Illuminate\Support\Facades\Storage;
+
+beforeEach(function () {
+    Storage::fake('local');
+});
 /*
 |--------------------------------------------------------------------------
 | Test Case

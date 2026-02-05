@@ -20,11 +20,15 @@ class WeeklyReportsExportService
         $zipFileName = "weekly_reports" . uniqid() . ".zip";
         $zipPath = storage_path("app/temp/{$zipFileName}");
 
-        $zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+        
 
 
         $reports = $reports->where('status', 'certified');
+        $howMany = $reports->count();
 
+        if($howMany != 1){
+            $zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+        }
         if ($reports->isEmpty()) {
             throw new \Exception('No certified reports selected.');
         }
@@ -176,20 +180,23 @@ class WeeklyReportsExportService
 
             usleep(200000);
 
-            $zip->addFile($tempPath, $fileName);
+            if($howMany != 1) {
+                $zip->addFile($tempPath, $fileName);
+            }
             
             $tempFiles[] = $tempPath;
 
         }
+        if($howMany != 1) {
+            $zip->close();
 
-        $zip->close();
-
-        foreach($tempFiles as $file) {
-            if(file_exists($file)) {
-                unlink($file);
+            foreach($tempFiles as $file) {
+                if(file_exists($file)) {
+                    unlink($file);
+                }
             }
-        }
 
-        return response()->download($zipPath)->deleteFileAfterSend(true);
+            return response()->download($zipPath)->deleteFileAfterSend(true);
+        }   
     }
 }

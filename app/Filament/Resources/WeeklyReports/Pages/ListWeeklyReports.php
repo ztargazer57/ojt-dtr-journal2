@@ -2,12 +2,8 @@
 
 namespace App\Filament\Resources\WeeklyReports\Pages;
 
-use App\Filament\Exports\WeeklyReportsExporter;
-use App\Services\Exports\WeeklyReportsExportService;
-use Filament\Actions\Action;
-use Filament\Actions\ExportAction;
+use App\Filament\Actions\ExportCertifiedReportsAction;
 use App\Filament\Resources\WeeklyReports\WeeklyReportsResource;
-use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListWeeklyReports extends ListRecords
@@ -24,7 +20,7 @@ class ListWeeklyReports extends ListRecords
             //     ->requiresConfirmation()
             //     ->modalHeading('Export Weekly Reports')
             //     ->modalDescription('Keep in mind this will only export [certified] reports'),
-               
+                
         ];
     }
 }
