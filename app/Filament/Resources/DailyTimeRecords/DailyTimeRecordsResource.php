@@ -6,7 +6,7 @@ use App\Filament\Resources\DailyTimeRecords\Pages\ListDailyTimeRecords;
 use App\Filament\Resources\DailyTimeRecords\Schemas\DailyTimeRecordsForm;
 use App\Filament\Resources\DailyTimeRecords\Schemas\DailyTimeRecordsInfolist;
 use App\Filament\Resources\DailyTimeRecords\Tables\DailyTimeRecordsTable;
-use App\Models\DailyTimeRecords;
+use App\Models\DtrLog;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class DailyTimeRecordsResource extends Resource
 {
-    protected static ?string $model = DailyTimeRecords::class;
+    protected static ?string $model = DtrLog::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 

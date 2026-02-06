@@ -53,6 +53,8 @@ class InternPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            ->databaseNotifications()
+            ->databaseNotificationsPolling('30s');
     }
 }

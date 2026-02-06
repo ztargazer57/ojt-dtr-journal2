@@ -18,15 +18,15 @@ class WeeklyReportsExportService
         \PhpOffice\PhpWord\Settings::setDefaultPaper('Letter');
         $zip = new ZipArchive();
         $zipFileName = "weekly_reports" . uniqid() . ".zip";
-        $zipPath = storage_path("app/temp/{$zipFileName}");
+        $zipPath = storage_path("app/public/temp{$zipFileName}");
 
-        
+
 
 
         $reports = $reports->where('status', 'certified');
         $howMany = $reports->count();
 
-        if($howMany != 1){
+        if ($howMany != 1) {
             $zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
         }
         if ($reports->isEmpty()) {
@@ -36,7 +36,7 @@ class WeeklyReportsExportService
         foreach ($reports as $report) {
             $php = new PhpWord();
             $section = $php->addSection();
-            
+
             $php->setDefaultFontName('Tahoma');
             $php->setDefaultFontSize(11);
             $paragraphStyle = array(
@@ -88,14 +88,14 @@ class WeeklyReportsExportService
             if (is_string($entries)) {
                 $entries = json_decode($entries, true) ?? [];
             }
+
             // WEEK FOCUS 
             $section->addText('1. WEEK FOCUS', $sectionTitleStyle, $paragraphStyle);
             $section->addText('     What was your main focus this week?', null, $paragraphStyle);
             $section->addTextBreak(1);
             $section->addText('Answer:', $labelStyle, $paragraphStyle);
-            $section->addText("     {$entries['week_focus']}", null, $paragraphStyle);
+            $section->addText(strip_tags("     {$entries['week_focus']}"), null, $paragraphStyle);
             $section->addTextBreak(2);
-
 
             // TOPICS & CONCEPTS LEARNED 
             $section->addText('2. TOPICS & CONCEPTS LEARNED', $sectionTitleStyle, $paragraphStyle);
@@ -104,7 +104,7 @@ class WeeklyReportsExportService
             $section->addText('Topics:', $labelStyle, $paragraphStyle);
             foreach ($entries['topics_learned'] as $topic) {
                 $section->addText(
-                    "       - " . htmlspecialchars($topic, ENT_QUOTES | ENT_XML1, 'UTF-8'),
+                    "       - " . $topic['topic'],
                     null,
                     $paragraphStyle
                 );
@@ -130,7 +130,7 @@ class WeeklyReportsExportService
             $section->addText('     Describe what you created and what problem it was meant to solve.', $sectionTitleStyle, $paragraphStyle);
             $section->addTextBreak(1);
             $section->addText('Answer:', $labelStyle);
-            $section->addText("     " . $entries['what_built'], null, $paragraphStyle);
+            $section->addText("     " . strip_tags($entries['what_built']), null, $paragraphStyle);
             $section->addTextBreak(2);
 
 
@@ -149,7 +149,7 @@ class WeeklyReportsExportService
             $section->addText('     What was difficult or confusing? What slowed you down?', $sectionTitleStyle, $paragraphStyle);
             $section->addTextBreak(1);
             $section->addText('Answer:', $labelStyle, $paragraphStyle);
-            $section->addText("     " . $entries['challenges_blockers'], null, $paragraphStyle);
+            $section->addText("     " . strip_tags($entries['challenges_blockers']), null, $paragraphStyle);
             $section->addTextBreak(2);
 
             // WHAT YOU BUILT OR DESIGNED
@@ -162,12 +162,32 @@ class WeeklyReportsExportService
             $section->addText("     " . $entries['improve_next_time']['improvement_2'] ?? '', null, $paragraphStyle);
             $section->addTextBreak(2);
 
+            //KEY TAKE AWAY
+            $section->addText('8. KEY TAKEAWAY OF THE WEEK', $sectionTitleStyle, $paragraphStyle);
+            $section->addText('     What is the most important thing you learned this week? How will it change how you work next week?', $sectionTitleStyle, $paragraphStyle);
+            $section->addTextBreak(1);
+            $section->addText('Answer:', $labelStyle, $paragraphStyle);
+            $section->addText('     ' . strip_tags($entries['key_takeaway']), null, $paragraphStyle);
+            $section->addTextBreak(2);
+
+            //SIGNATURE
+            $signaturePath = $report->signature ? storage_path("app/private/{$report->signature}") : null;
+
+            if ($signaturePath && file_exists($signaturePath)) {
+                $section->addImage($signaturePath, [
+                    'width' => 100,
+                    'height' => 100,
+                ]);
+            }
+            $section->addText($report->user->name, ['underline' => 'single']);
+            $section->addText('     Intern Signature');
+
             // Save
             $safeName = preg_replace('/[^A-Za-z0-9 _-]/', '', $report->user->name);
             $fileName = "Weekly_Report_{$report->id}_{$safeName}.docx";
-            $tempPath = storage_path("app/temp/{$fileName}");
+            $tempPath = storage_path("app/public/temp/{$fileName}");
 
-            Storage::makeDirectory('temp');
+            Storage::disk('public')->makeDirectory('temp');
             $writer = IOFactory::createWriter($php, 'Word2007');
             $writer->save($tempPath);
 
@@ -180,23 +200,28 @@ class WeeklyReportsExportService
 
             usleep(200000);
 
-            if($howMany != 1) {
+            if ($howMany != 1) {
                 $zip->addFile($tempPath, $fileName);
             }
-            
+
             $tempFiles[] = $tempPath;
 
         }
-        if($howMany != 1) {
+        if ($howMany != 1) {
             $zip->close();
 
-            foreach($tempFiles as $file) {
-                if(file_exists($file)) {
+            foreach ($tempFiles as $file) {
+                if (file_exists($file)) {
                     unlink($file);
                 }
             }
 
             return response()->download($zipPath)->deleteFileAfterSend(true);
-        }   
+
+        }
+        
+        if ($howMany == 1) {
+            return response()->download($tempPath)->deleteFileAfterSend(true);
+        }
     }
 }

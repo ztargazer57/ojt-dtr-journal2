@@ -2,37 +2,50 @@
 
 namespace App\Filament\Resources\DailyTimeRecords\Tables;
 
+use Filament\Actions\BulkActionGroup;
 use Filament\Tables\Table;
+use Filament\Actions\ExportBulkAction;
 use Filament\Tables\Columns\TextColumn;
+use App\Filament\Exports\DailyTimeRecordsExporter;
 
 class DailyTimeRecordsTable
 {
     public static function configure(Table $table): Table
     {
         return $table
-        ->heading('Daily Time Records')
             ->columns([
-                TextColumn::make('id')
-                ->label('ID')
-                ->sortable(),
                 TextColumn::make('user.name')
                 ->label('Name')
+                ->sortable()
                 ->searchable(),
-                TextColumn::make('date')
-                ->label('Date')
-                ->date(),
-                TextColumn::make('time')
-                ->label('Time')
-                ->dateTime('h:i A'),
+                TextColumn::make('created_at')
+                    ->label('Date')
+                    ->date()
+                    ->sortable(),
+                TextColumn::make('recorded_at')
+                    ->label('Time')
+                    ->dateTime('h:i A'),
                 TextColumn::make('type')
-                ->label('Type')
-                ->formatStateUsing(fn($state) => $state === 1? 'In':'Out')
-                ->badge()
-                ->color(fn($state) => $state === 1? 'success': 'warning'),
+                    ->badge()
+                    ->formatStateUsing(fn($state) => $state === 1 ? 'In' : 'Out')
+                    ->color(fn($state) => $state === 1 ? 'success' : 'warning')
+            ])->defaultSort('recorded_at', direction: 'desc')
+            ->filters([
+                //
             ])
             ->recordActions([
+                // EditAction::make(),
             ])
             ->toolbarActions([
+                BulkActionGroup::make([
+                    ExportBulkAction::make('export')
+                        ->label("Export Selected")
+                        ->icon('heroicon-o-archive-box-arrow-down')
+                        ->color('success')
+                        ->exporter(DailyTimeRecordsExporter::class)
+                        ->maxRows(500)
+                        ->columnMapping(false),
+                ])
             ]);
     }
 }

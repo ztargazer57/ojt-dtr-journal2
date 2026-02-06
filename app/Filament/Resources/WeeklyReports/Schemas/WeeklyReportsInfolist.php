@@ -33,6 +33,8 @@ class WeeklyReportsInfolist
                 TextEntry::make('signature')
                     ->placeholder('-'),
                 TextEntry::make('entries')
+                //Erase the line below if error related sa pagview
+                ->formatStateUsing(fn ($state) => json_encode($state))
                     ->placeholder('-')
                     ->columnSpanFull(),
                 TextEntry::make('created_at')

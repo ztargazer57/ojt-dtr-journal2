@@ -3,11 +3,10 @@
 namespace App\Filament\Intern\Resources\DailyTimeRecords\Tables;
 
 use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
+use App\Filament\Exports\DailyTimeRecordsExporter;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\ExportBulkAction;
 use Filament\Tables\Table;
-use Illuminate\Container\Attributes\Auth;
 
 class DailyTimeRecordsTable
 {
@@ -34,9 +33,14 @@ class DailyTimeRecordsTable
                 // EditAction::make(),
             ])
             ->toolbarActions([
-                // BulkActionGroup::make([
-                //     DeleteBulkAction::make(),
-                // ]),
+                BulkActionGroup::make([
+                    ExportBulkAction::make()
+                        ->label("Export Selected")
+                        ->icon('heroicon-o-archive-box-arrow-down')
+                        ->exporter(DailyTimeRecordsExporter::class)
+                        ->maxRows(500)
+                        ->columnMapping(false),
+                ])
             ]);
     }
 }
