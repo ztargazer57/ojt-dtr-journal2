@@ -12,6 +12,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Notifications\Collection;
 
 class WeeklyReportsTable
 {
@@ -43,14 +44,6 @@ class WeeklyReportsTable
                 TextColumn::make('viewed_at')
                     ->dateTime()
                     ->sortable(),
-                TextColumn::make('certified_at')
-                    ->dateTime()
-                    ->sortable(),
-                TextColumn::make('certified_by')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('signature')
-                    ->searchable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -92,6 +85,8 @@ class WeeklyReportsTable
                     }),
             ])
             ->recordActions([
+                ViewAction::make()
+                ->color('info')
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
