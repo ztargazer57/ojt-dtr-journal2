@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\WeeklyReports\Tables;
 
+use App\Filament\Admin\Resources\WeeklyReports\Pages\ViewWeeklyReports;
 use App\Services\Exports\WeeklyReportsExportService;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
@@ -12,6 +13,8 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Actions\ViewAction;
+
 
 class WeeklyReportsTable
 {
