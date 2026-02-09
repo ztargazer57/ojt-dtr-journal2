@@ -56,8 +56,4 @@ class WeeklyReportsResource extends Resource
             'edit' => EditWeeklyReports::route('/{record}/edit'),
         ];
     }
-
-    
-        ];
-    }
 }

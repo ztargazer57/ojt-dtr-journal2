@@ -14,15 +14,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\DatePicker;
 use Filament\Actions\BulkAction;
 use App\Services\Exports\WeeklyReportsExportService;
-use Filament\Actions\BulkActionGroup;
 use Filament\Notifications\Notification;
 use Filament\Notifications\Collection;
-use Filament\Tables\Filters\Filter;
-use Filament\Forms\Components\DatePicker;
-use Illuminate\Database\Eloquent\Builder;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Table;
 
 class WeeklyReportsTable
 {
@@ -54,14 +47,6 @@ class WeeklyReportsTable
                 TextColumn::make('viewed_at')
                     ->dateTime()
                     ->sortable(),
-                TextColumn::make('certified_at')
-                    ->dateTime()
-                    ->sortable(),
-                TextColumn::make('certified_by')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('signature')
-                    ->searchable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -105,6 +90,8 @@ class WeeklyReportsTable
                     }),
             ])
             ->recordActions([
+                ViewAction::make()
+                ->color('info')
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
