@@ -1,6 +1,6 @@
 <?php
+
 namespace App\Http\Middleware;
-use Illuminate\Support\Facades\Auth;
 
 use Closure;
 use Illuminate\Http\Request;
@@ -17,10 +17,10 @@ class EnsureAdminUser
         }
 
         if (! $user || $user->role !== 'admin') {
-            abort(403, 'Unauthorized.');          
+            abort(403, 'Unauthorized.');
         }
 
-        if($user->role !== 'admin'){
+        if ($user->role !== 'admin') {
             return null;
         }
 

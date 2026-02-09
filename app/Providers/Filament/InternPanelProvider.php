@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Http\Middleware\IsInternUser;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -18,8 +19,6 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use App\Http\Middleware\IsInternUser;
-
 
 class InternPanelProvider extends PanelProvider
 {
@@ -60,5 +59,4 @@ class InternPanelProvider extends PanelProvider
             ->databaseNotifications()
             ->databaseNotificationsPolling('30s');
     }
-
 }

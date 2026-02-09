@@ -8,11 +8,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Filament\Models\Contracts\FilamentUser;
 
 class User extends Authenticatable implements FilamentUser
 {
-
     public function canAccessPanel(\Filament\Panel $panel): bool
     {
         return match ($panel->getId()) {
@@ -21,6 +19,7 @@ class User extends Authenticatable implements FilamentUser
             default => false,
         };
     }
+
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
@@ -72,10 +71,5 @@ class User extends Authenticatable implements FilamentUser
     public function shift()
     {
         return $this->belongsTo(Shift::class);
-    }
-
-    public function canAccessPanel(\Filament\Panel $panel): bool
-    {
-        return true; // Allow access for testing
     }
 }

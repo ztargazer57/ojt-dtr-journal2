@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->unique();
             $table->datetime('created_at');
             $table->text('subject_type');
-            $table->enum('action', ['edited', 'viewed', 'certified','deleted']);
+            $table->enum('action', ['edited', 'viewed', 'certified', 'deleted']);
             $table->foreignId('subject_id')->constrained('weekly_reports')->unique();
         });
     }

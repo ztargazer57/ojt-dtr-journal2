@@ -1,15 +1,13 @@
 <?php
 
-use App\Filament\Resources\WeeklyReports\WeeklyReportsResource;
-use App\Models\WeeklyReports;
+use App\Filament\Admin\Resources\WeeklyReports\Pages\ViewWeeklyReports;
+use App\Filament\Admin\Resources\WeeklyReports\WeeklyReportsResource;
 use App\Models\User;
-use Livewire\Livewire;
-use App\Filament\Resources\WeeklyReports\Pages\ViewWeeklyReports;
-use Filament\Resources\Pages\Concerns\InteractsWithRecord;
-use Illuminate\Testing\TestResponse;
+use App\Models\WeeklyReports;
 use App\Services\Exports\WeeklyReportsExportService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Livewire;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use ZipArchive;
 
@@ -43,7 +41,7 @@ it('Exports only certified reports into a zip', function () {
 
     expect(file_exists($zipPath))->toBeTrue();
 
-    $zip = new ZipArchive();
+    $zip = new ZipArchive;
     $opened = $zip->open($zipPath);
 
     expect($opened)->toBeTrue();
@@ -73,7 +71,7 @@ it('exports a docx file when one file is exported', function () {
 });
 
 it('Displays the Export button in the Header Actions when called', function () {
-    //Sample Report data with Certifications
+    // Sample Report data with Certifications
     $admin = User::where('role', 'admin')->first() ?? User::factory()->create(['role' => 'admin']);
 
     $this->actingAs($admin);
@@ -83,8 +81,7 @@ it('Displays the Export button in the Header Actions when called', function () {
         'certified_by' => $admin->id,
     ])->first();
 
-
-    //Mount the Simulation
+    // Mount the Simulation
     $response = $this->get(WeeklyReportsResource::getUrl('view', ['record' => $report->id]));
     $response->assertSee('Export');
 });

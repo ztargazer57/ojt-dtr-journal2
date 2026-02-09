@@ -32,5 +32,5 @@ test('intern users can pass through intern middleware', function () {
         ->get('/intern-only-test');
 
     $response->assertOk()
-             ->assertSee('OK');
+        ->assertSee('OK');
 });

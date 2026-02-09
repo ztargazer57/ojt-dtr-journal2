@@ -2,18 +2,17 @@
 
 namespace App\Filament\Intern\Resources\WeeklyReports\Tables;
 
-use Filament\Actions\BulkAction;
 use App\Services\Exports\WeeklyReportsExportService;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
-use Filament\Tables\Table;
+use Filament\Notifications\Notification;
+use Filament\Support\Enums\TextSize;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
-use Filament\Support\Enums\TextSize;
-use Filament\Notifications\Notification;
-use App\Models\WeeklyReports;
+use Filament\Tables\Table;
 
 class WeeklyReportsTable
 {
@@ -41,11 +40,11 @@ class WeeklyReportsTable
                 TextColumn::make('status')
                     ->badge()
                     ->searchable()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'pending' => 'gray',
                         'viewed' => 'warning',
                         'certified' => 'success',
-                    })
+                    }),
             ])->striped()
             ->filters([
                 SelectFilter::make('status')
@@ -58,40 +57,40 @@ class WeeklyReportsTable
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make()
-                    ->hidden(fn($record): bool => $record->status === 'certified'),
+                    ->hidden(fn ($record): bool => $record->status === 'certified'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
-                        BulkAction::make('exportSelected')
-                            ->label("Export Selected")
-                            ->icon('heroicon-o-archive-box-arrow-down')
-                            ->color('success')
-                            ->requiresConfirmation()
-                            ->modalHeading('Export Weekly Reports')
-                            ->modalDescription(new \Illuminate\Support\HtmlString('Keep in mind this will only export <span style="color:rgb(51, 255, 0);">certified</span> reports'))
-                            ->action(function (\Illuminate\Support\Collection $reports) {
-                                $certified = $reports->where('status', 'certified');
-    
-                                if ($certified->isEmpty()) {
-                                    Notification::make()
-                                        ->title('Nothing to export')
-                                        ->body('The selected reports are not certified.')
-                                        ->warning()
-                                        ->send();
-    
-                                    return;
-                                }
-    
-                                app(WeeklyReportsExportService::class)
-                                    ->exportCertifiedReports($reports);
+                    BulkAction::make('exportSelected')
+                        ->label('Export Selected')
+                        ->icon('heroicon-o-archive-box-arrow-down')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Export Weekly Reports')
+                        ->modalDescription(new \Illuminate\Support\HtmlString('Keep in mind this will only export <span style="color:rgb(51, 255, 0);">certified</span> reports'))
+                        ->action(function (\Illuminate\Support\Collection $reports) {
+                            $certified = $reports->where('status', 'certified');
+
+                            if ($certified->isEmpty()) {
                                 Notification::make()
-                                    ->title('Export Started')
-                                    ->body('Your Export file is being generated...')
-                                    ->success()
+                                    ->title('Nothing to export')
+                                    ->body('The selected reports are not certified.')
+                                    ->warning()
                                     ->send();
-                            })
-                    ])
+
+                                return;
+                            }
+
+                            app(WeeklyReportsExportService::class)
+                                ->exportCertifiedReports($reports);
+                            Notification::make()
+                                ->title('Export Started')
+                                ->body('Your Export file is being generated...')
+                                ->success()
+                                ->send();
+                        }),
+                ]),
             ]);
     }
 }

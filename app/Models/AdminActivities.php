@@ -8,13 +8,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class AdminActivities extends Model
 {
     public $timestamps = false;
+
     protected $fillable = [
         'id',
         'user_id',
         'created_at',
         'subject_type',
         'action',
-        'subject_id',          
+        'subject_id',
     ];
 
     public function user(): BelongsTo

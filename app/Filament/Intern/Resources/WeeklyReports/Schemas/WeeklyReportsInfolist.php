@@ -2,13 +2,12 @@
 
 namespace App\Filament\Intern\Resources\WeeklyReports\Schemas;
 
-use Filament\Schemas\Schema;
-
-use Filament\Infolists\Components\TextEntry;
-use Filament\Support\Enums\TextSize;
-use Filament\Infolists\Components\RepeatableEntry;
-use Filament\Schemas\Components\Section;
 use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\RepeatableEntry;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Support\Enums\TextSize;
 
 class WeeklyReportsInfolist
 {
@@ -106,8 +105,8 @@ class WeeklyReportsInfolist
                 ->html(),
 
             ImageEntry::make('signature')
-            ->imageWidth(350)
-            ->imageHeight(200)
+                ->imageWidth(350)
+                ->imageHeight(200),
         ])->columns(1);
     }
 }

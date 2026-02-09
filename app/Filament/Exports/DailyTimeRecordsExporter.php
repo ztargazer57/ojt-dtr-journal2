@@ -3,16 +3,16 @@
 namespace App\Filament\Exports;
 
 use App\Models\DtrLog;
+use Filament\Actions\Exports\ExportColumn;
+use Filament\Actions\Exports\Exporter;
+use Filament\Actions\Exports\Models\Export;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Number;
 use OpenSpout\Common\Entity\Style\CellAlignment;
 use OpenSpout\Common\Entity\Style\CellVerticalAlignment;
 use OpenSpout\Common\Entity\Style\Color;
 use OpenSpout\Common\Entity\Style\Style;
 use OpenSpout\Writer\XLSX\Options;
-use Illuminate\Support\Carbon;
-use Filament\Actions\Exports\ExportColumn;
-use Filament\Actions\Exports\Exporter;
-use Filament\Actions\Exports\Models\Export;
-use Illuminate\Support\Number;
 
 class DailyTimeRecordsExporter extends Exporter
 {
@@ -37,13 +37,13 @@ class DailyTimeRecordsExporter extends Exporter
                 }),
             ExportColumn::make('type')
                 ->label('Type')
-                ->formatStateUsing(fn($state) => $state === 1 ? '[IN]' : '[OUT]'),
+                ->formatStateUsing(fn ($state) => $state === 1 ? '[IN]' : '[OUT]'),
         ];
     }
 
     public function getXlsxWriterOptions(): ?Options
     {
-        $options = new Options();
+        $options = new Options;
         $columnWidths = [0, 5, 30, 15, 15, 10];
 
         foreach ($columnWidths as $index => $width) {
@@ -54,14 +54,15 @@ class DailyTimeRecordsExporter extends Exporter
     }
 
     public function getXlsxCellStyle(): ?Style
-{
-    return (new Style())
-        ->setCellAlignment('center')
-        ->setBackgroundColor(Color::rgb(186, 193, 231));
-}
+    {
+        return (new Style)
+            ->setCellAlignment('center')
+            ->setBackgroundColor(Color::rgb(186, 193, 231));
+    }
+
     public function getXlsxHeaderCellStyle(): ?Style
     {
-        return (new Style())
+        return (new Style)
             ->setFontBold()
             ->setFontItalic()
             ->setFontSize(12)
@@ -74,10 +75,10 @@ class DailyTimeRecordsExporter extends Exporter
 
     public static function getCompletedNotificationBody(Export $export): string
     {
-        $body = 'Your daily time records export has completed and ' . Number::format($export->successful_rows) . ' ' . str('row')->plural($export->successful_rows) . ' exported.';
+        $body = 'Your daily time records export has completed and '.Number::format($export->successful_rows).' '.str('row')->plural($export->successful_rows).' exported.';
 
         if ($failedRowsCount = $export->getFailedRowsCount()) {
-            $body .= ' ' . Number::format($failedRowsCount) . ' ' . str('row')->plural($failedRowsCount) . ' failed to export.';
+            $body .= ' '.Number::format($failedRowsCount).' '.str('row')->plural($failedRowsCount).' failed to export.';
         }
 
         return $body;

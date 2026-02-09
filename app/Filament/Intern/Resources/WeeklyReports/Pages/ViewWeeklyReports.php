@@ -15,7 +15,7 @@ class ViewWeeklyReports extends ViewRecord
     {
         return [
             EditAction::make()
-            ->hidden(fn ($record): bool => $record->status === 'certified'),
+                ->hidden(fn ($record): bool => $record->status === 'certified'),
             ExportCertifiedReportsAction::make('Export'),
         ];
     }

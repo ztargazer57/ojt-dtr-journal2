@@ -13,15 +13,15 @@ beforeEach(function () {
     Filament::setCurrentPanel(Filament::getPanel('intern'));
 });
 
-//helper functions 
+// helper functions
 function createDayShift()
 {
     return Shift::create([
         'name' => 'Day',
         'session_1_start' => '08:00:00',
-        'session_1_end'   => '12:00:00',
+        'session_1_end' => '12:00:00',
         'session_2_start' => '13:00:00',
-        'session_2_end'   => '17:00:00',
+        'session_2_end' => '17:00:00',
     ]);
 }
 
@@ -30,9 +30,9 @@ function createNightShift()
     return Shift::create([
         'name' => 'Night',
         'session_1_start' => '20:00:00',
-        'session_1_end'   => '00:00:00',
+        'session_1_end' => '00:00:00',
         'session_2_start' => '01:00:00',
-        'session_2_end'   => '05:00:00',
+        'session_2_end' => '05:00:00',
     ]);
 }
 
@@ -50,7 +50,7 @@ it('shows correct stats for a perfect 8-hour day', function () {
             'user_id' => $user->id,
             'type' => 1,
             'work_date' => $today,
-            'recorded_at' => "{$today} 08:00:00"
+            'recorded_at' => "{$today} 08:00:00",
         ]
     );
 
@@ -59,7 +59,7 @@ it('shows correct stats for a perfect 8-hour day', function () {
             'user_id' => $user->id,
             'type' => 2,
             'work_date' => $today,
-            'recorded_at' => "{$today} 12:00:00"
+            'recorded_at' => "{$today} 12:00:00",
         ]
     );
 
@@ -69,7 +69,7 @@ it('shows correct stats for a perfect 8-hour day', function () {
             'user_id' => $user->id,
             'type' => 1,
             'work_date' => $today,
-            'recorded_at' => "{$today} 13:00:00"
+            'recorded_at' => "{$today} 13:00:00",
         ]
     );
 
@@ -78,7 +78,7 @@ it('shows correct stats for a perfect 8-hour day', function () {
             'user_id' => $user->id,
             'type' => 2,
             'work_date' => $today,
-            'recorded_at' => "{$today} 17:00:00"
+            'recorded_at' => "{$today} 17:00:00",
         ]
     );
 
@@ -103,7 +103,7 @@ it('shows correct stats for a late day', function () {
             'user_id' => $user->id,
             'type' => 1,
             'work_date' => $today,
-            'recorded_at' => "{$today} 08:10:00"
+            'recorded_at' => "{$today} 08:10:00",
         ]
     );
 
@@ -112,7 +112,7 @@ it('shows correct stats for a late day', function () {
             'user_id' => $user->id,
             'type' => 2,
             'work_date' => $today,
-            'recorded_at' => "{$today} 12:00:00"
+            'recorded_at' => "{$today} 12:00:00",
         ]
     );
 
@@ -122,7 +122,7 @@ it('shows correct stats for a late day', function () {
             'user_id' => $user->id,
             'type' => 1,
             'work_date' => $today,
-            'recorded_at' => "{$today} 13:20:00"
+            'recorded_at' => "{$today} 13:20:00",
         ]
     );
 
@@ -131,7 +131,7 @@ it('shows correct stats for a late day', function () {
             'user_id' => $user->id,
             'type' => 2,
             'work_date' => $today,
-            'recorded_at' => "{$today} 17:00:00"
+            'recorded_at' => "{$today} 17:00:00",
         ]
     );
 
@@ -156,7 +156,7 @@ it('shows correct stats for a undertime day', function () {
             'user_id' => $user->id,
             'type' => 1,
             'work_date' => $today,
-            'recorded_at' => "{$today} 08:00:00"
+            'recorded_at' => "{$today} 08:00:00",
         ]
     );
 
@@ -165,7 +165,7 @@ it('shows correct stats for a undertime day', function () {
             'user_id' => $user->id,
             'type' => 2,
             'work_date' => $today,
-            'recorded_at' => "{$today} 09:00:00"
+            'recorded_at' => "{$today} 09:00:00",
         ]
     );
 
@@ -175,7 +175,7 @@ it('shows correct stats for a undertime day', function () {
             'user_id' => $user->id,
             'type' => 1,
             'work_date' => $today,
-            'recorded_at' => "{$today} 13:00:00"
+            'recorded_at' => "{$today} 13:00:00",
         ]
     );
 
@@ -184,7 +184,7 @@ it('shows correct stats for a undertime day', function () {
             'user_id' => $user->id,
             'type' => 2,
             'work_date' => $today,
-            'recorded_at' => "{$today} 17:00:00"
+            'recorded_at' => "{$today} 17:00:00",
         ]
     );
 

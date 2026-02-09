@@ -32,5 +32,5 @@ test('admin users can pass through admin middleware', function () {
         ->get('/admin-only-test');
 
     $response->assertOk()
-             ->assertSee('OK');
+        ->assertSee('OK');
 });

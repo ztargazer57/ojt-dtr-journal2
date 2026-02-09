@@ -38,12 +38,12 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             TestDtrLogsSeeder::class,
             WeeklyReportsSeeder::class,
-            AttendancesSeeder::class
+            AttendancesSeeder::class,
         ]);
-        $this->call([WeeklyReportsSeeder::class,]);
-        $this->call([ShiftSeeder::class,]);
-        $this->call([TestDtrLogsSeeder::class,]);
-        $this->call([AttendancesSeeder::class,]);
-        $this->call([UserSeeder::class,]);
+        $this->call([WeeklyReportsSeeder::class]);
+        $this->call([ShiftSeeder::class]);
+        $this->call([TestDtrLogsSeeder::class]);
+        $this->call([AttendancesSeeder::class]);
+        $this->call([UserSeeder::class]);
     }
 }

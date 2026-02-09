@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\WeeklyReports;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+
 class WeeklyReportsSeeder extends Seeder
 {
     /**

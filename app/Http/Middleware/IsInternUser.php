@@ -1,9 +1,9 @@
 <?php
+
 namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class IsInternUser
 {
@@ -18,10 +18,11 @@ class IsInternUser
 
         if (! $user || $user->role !== 'intern') {
             abort(403, 'Unauthorized.');
+
             return null;
         }
 
-        if($user->role !== 'intern'){
+        if ($user->role !== 'intern') {
             return null;
         }
 
