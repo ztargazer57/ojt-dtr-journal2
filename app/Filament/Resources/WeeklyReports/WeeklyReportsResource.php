@@ -21,7 +21,7 @@ use Filament\Widgets\StatsOverviewWidget;
 
 class WeeklyReportsResource extends Resource
 {
-    protected static ?int $navigationSort = 1; // lower numbers appear first
+    protected static ?int $navigationSort = 1;
     protected static ?string $model = WeeklyReports::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedFolderOpen;

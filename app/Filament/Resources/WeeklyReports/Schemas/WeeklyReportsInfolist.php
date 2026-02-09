@@ -7,6 +7,9 @@ use App\Models\WeeklyReports;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
+use Filament\Support\Enums\TextSize;
+use Filament\Infolists\Components\RepeatableEntry;
+use Filament\Infolists\Components\ImageEntry;
 
 
 
@@ -50,9 +53,6 @@ class WeeklyReportsInfolist
                     ->label('Certified by')
                     ->getStateUsing(fn ($record) => $record->certifiedBy?->name)
                     ->placeholder('-'),
-                TextEntry::make('signature')
-                    ->placeholder('-')
-                    ->columnSpanFull(),
                 ])->columns(2),
                 //entries        
                 Section::make('Week Focus')
@@ -60,9 +60,9 @@ class WeeklyReportsInfolist
                 ->schema([      
                     TextEntry::make('entries.week_focus')  
                     ->disableLabel()
-                        ->getStateUsing(fn ($record) =>
-                            data_get($record->entries_decoded, 'week_focus', '—')
-                        )
+                    ->getStateUsing(fn ($record) =>
+                        new HtmlString(data_get($record->entries, 'week_focus', '—'))
+                        ),
                     ])->columnSpanFull(),
                     Section::make('Topics Learned')
                     ->description('List the topics, tools, or concepts you worked on this week.')
@@ -81,28 +81,21 @@ class WeeklyReportsInfolist
                 Section::make('Outputs Links')
                 ->description('Provide direct links to your work. Each link must have a short description.')
                 ->schema([  
-                TextEntry::make('outputs_links')
-                        ->disableLabel()
-                        ->getStateUsing(fn ($record) =>
-                            collect(data_get($record->entries, 'outputs_links', []))
-                                ->map(fn ($item) => $item['url'])
-                                ->join("\n")
-                                ?: '—'
-                    )
-                ]),          
-                Section::make('Decisions / Reasoning')
-                ->description('Explain at least two decisions you made this week.')
-                ->schema([   
-                        TextEntry::make('decisions_reasoning')
-                        ->disableLabel()
-                        ->getStateUsing(fn ($record) =>
-                            collect(data_get($record->entries, 'decisions_reasoning', []))
-                                ->map(fn ($value, $key) => ucfirst(str_replace('_', ' ', $key)) . ': ' . $value)
-                                ->values()      // make sure it’s a plain array
-                                ->all()         // convert collection to array
-                        )
-                        ->bulleted(), 
-                ]),          
+                    RepeatableEntry::make('entries.outputs_links')
+                    ->label('Outputs and Links (REQUIRED)')
+                    ->schema([
+                        TextEntry::make('url')
+                            ->belowLabel('Provide direct links to your work.')
+                            ->label('URL')
+                            ->size(TextSize::Medium)
+                            ->url(fn ($state) => $state)
+                            ->openUrlInNewTab(),
+                        TextEntry::make('description')
+                            ->belowLabel('Each link must have a short description.')
+                            ->label('Description')
+                            ->size(TextSize::Medium),
+                    ])            
+                ])->columnSpanFull(),          
                 Section::make('What I Built')
                 ->description('Describe what you created and what problem it was meant to solve.')
                 ->schema([        
@@ -112,14 +105,32 @@ class WeeklyReportsInfolist
                             new HtmlString(data_get($record->entries, 'what_built', '—'))
                         ),
                     ])->columnSpanFull(),
-                
+                    Section::make('Decisions / Reasoning')
+                    ->description('Explain at least two decisions you made this week.')
+                    ->schema([
+                        RepeatableEntry::make('decisions_reasoning')
+                            ->disableLabel()
+                            ->schema([
+                            TextEntry::make('decision')
+                                    ->label('Decision / Reasoning'),
+                            ])
+                            ->getStateUsing(fn ($record) =>
+                                collect(data_get($record->entries, 'decisions_reasoning', []))
+                                    ->map(fn ($value) => [
+                                        'decision' => $value, // each entry must be an array with the schema field
+                                    ])
+                                    ->values()
+                                    ->all()
+                            ),
+                    ])->columnSpanFull(),
+                     
                 Section::make('Challenges / Blockers')
                 ->description('What was difficult or confusing? What slowed you down? ')
                 ->schema([                   
                     TextEntry::make('challenges_blockers')
                     ->disableLabel()
                     ->getStateUsing(fn ($record) =>
-                        data_get($record->entries_decoded, 'challenges_blockers', '—')
+                        new HtmlString(data_get($record->entries, 'challenges_blockers', '—'))
                     ),
                 ])->columnSpanFull(),
                 Section::make('Improvements Next Time')
@@ -137,8 +148,14 @@ class WeeklyReportsInfolist
                     TextEntry::make('key_takeaway')
                     ->disableLabel()
                     ->getStateUsing(fn ($record) =>
-                        data_get($record->entries_decoded, 'key_takeaway', '—')
+                        new HtmlString(data_get($record->entries, 'week_focus', '—'))
                     ),
+                ])->columnSpanFull(),
+                Section::make()
+                ->schema([
+                    ImageEntry::make('signature')
+                    ->imageWidth(350)
+                    ->imageHeight(200)
                 ])->columnSpanFull(),
                  Section::make()
                 ->columnSpanFull()
