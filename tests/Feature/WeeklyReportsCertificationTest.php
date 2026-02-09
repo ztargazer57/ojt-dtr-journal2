@@ -1,8 +1,6 @@
 <?php
 
-use App\Models\User;
-use App\Models\WeeklyReport;
-use App\Filament\Resources\WeeklyReports\Pages\ViewWeeklyReports;
+use App\Filament\Admin\Resources\WeeklyReports\Pages\ViewWeeklyReports;
 use App\Models\WeeklyReports;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -10,7 +8,7 @@ use Livewire\Livewire;
 uses(RefreshDatabase::class);
 
 test('certify button is disabled if report is already certified', function () {
-   
+
     $report = WeeklyReports::factory()->create([
         'certified_at' => now(),
     ]);

@@ -4,20 +4,17 @@ namespace App\Filament\Intern\Resources\DailyTimeRecords\Pages;
 
 use App\Filament\Intern\Resources\DailyTimeRecords\DailyTimeRecordResource;
 use App\Filament\Intern\Resources\DailyTimeRecords\Widgets\DtrStatsWidget;
-use Filament\Resources\Pages\ListRecords;
 use App\Models\DtrLog;
 use Filament\Actions\Action;
+use Filament\Resources\Pages\ListRecords;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use \Illuminate\Support\Carbon;
-use \App\Models\User;
-
-use function Symfony\Component\Clock\now;
 
 class ListDailyTimeRecords extends ListRecords
 {
     protected static string $resource = DailyTimeRecordResource::class;
 
-    //function to get the date of the started shift
+    // function to get the date of the started shift
     protected function getBusinessDate(): string
     {
         $user = Auth::user();
@@ -37,15 +34,44 @@ class ListDailyTimeRecords extends ListRecords
         return $now->format('Y-m-d');
     }
 
-    //function to count how many logs exist for this specific busines date
+    // function to count how many logs exist for this specific busines date
     protected function getLogCount(): int
     {
-        return DtrLog::where('user_id', Auth::id())
-            ->where('work_date', $this->getBusinessDate())
-            ->count();
+
+        $user = Auth::user();
+        $shift = $user->shift;
+        $now = Carbon::now();
+        $workDate = $this->getBusinessDate();
+
+        $s2End = Carbon::parse($workDate.' '.$shift->session_2_end);
+
+        // Handle night shift
+        $s1Start = Carbon::parse($workDate.' '.$shift->session_1_start);
+        if ($s2End->lt($s1Start)) {
+            $s2End->addDay();
+        }
+
+        // Get the current logs for the day
+        $logs = DtrLog::where('user_id', $user->id)
+            ->where('work_date', $workDate)
+            ->orderBy('recorded_at', 'asc')
+            ->get();
+
+        $logCount = $logs->count();
+        $lastLog = $logs->last();
+
+        // disable button after session 2 end
+        if ($now->gte($s2End)) {
+            if ($logCount === 0 || ($lastLog && $lastLog->type === 2)) {
+                return 4;
+            }
+        }
+
+        // disable button after 4 logs
+        return ($logCount <= 3) ? $logCount : 4;
     }
 
-    //function for the action buttons
+    // function for the action buttons
     protected function getHeaderActions(): array
     {
         $logCount = $this->getLogCount();
@@ -56,18 +82,18 @@ class ListDailyTimeRecords extends ListRecords
                 ->Label('Time In')
                 ->color('success')
                 ->requiresConfirmation()
-                ->disabled(!($logCount === 0 || $logCount === 2))
-                ->action(fn() => $this->saveLog(1))
+                ->disabled(! ($logCount === 0 || $logCount === 2))
+                ->action(fn () => $this->saveLog(1))
                 ->successNotificationTitle('Clocked in successfully'),
 
-            //For time out
+            // For time out
             Action::make('time_out')
                 ->Label('Time Out')
                 ->color('info')
                 ->requiresConfirmation()
-                ->disabled(!($logCount === 1 || $logCount === 3))
-                ->action(fn() => $this->saveLog(2))
-                ->successNotificationTitle('Clocked out successfully')
+                ->disabled(! ($logCount === 1 || $logCount === 3))
+                ->action(fn () => $this->saveLog(2))
+                ->successNotificationTitle('Clocked out successfully'),
         ];
     }
 
@@ -75,21 +101,99 @@ class ListDailyTimeRecords extends ListRecords
     protected function saveLog(int $type): void
     {
         $user = Auth::user();
+        $shift = $user->shift;
+        $now = Carbon::now();
+        $workDate = $this->getBusinessDate();
+
+        $lateMinutes = 0;
+        $workMinutes = 0;
+
+        // time in
+        if ($type === 1) {
+
+            $s1Start = Carbon::parse($workDate.' '.$shift->session_1_start);
+            $s2Start = Carbon::parse($workDate.' '.$shift->session_2_start);
+
+            if ($s2Start->lt($s1Start)) {
+                $s2Start->addDay();
+            }
+
+            // check which session the user belongs
+            $targetStart = null;
+
+            // If current time is after session 2 start OR more than 4 hours after session 1 start
+            if ($now->gt($s1Start->copy()->addHours(4))) {
+                $targetStart = $s2Start;
+            } else {
+                $targetStart = $s1Start;
+            }
+
+            if ($now->gt($targetStart)) {
+
+                $lateMinutes = $now->diffInMinutes($targetStart);
+            }
+
+            // time out
+        } elseif ($type === 2) {
+            $lastIn = DtrLog::where('user_id', $user->id)
+                ->where('work_date', $workDate)
+                ->where('type', 1)
+                ->latest('recorded_at')
+                ->first();
+
+            if ($lastIn) {
+                $actualIn = Carbon::parse($lastIn->recorded_at);
+                $actualOut = $now;
+
+                // Use the date from the 'In' log to keep everything relative
+                $baseDate = $actualIn->format('Y-m-d');
+
+                $s1Start = Carbon::parse($baseDate.' '.$shift->session_1_start);
+                $s1End = Carbon::parse($baseDate.' '.$shift->session_1_end);
+                $s2Start = Carbon::parse($baseDate.' '.$shift->session_2_start);
+                $s2End = Carbon::parse($baseDate.' '.$shift->session_2_end);
+
+                if ($s1End->lt($s1Start)) {
+                    $s1End->addDay();
+                }
+
+                // Ensure S2 starts after S1 ends
+                while ($s2Start->lt($s1End)) {
+                    $s2Start->addDay();
+                }
+
+                // Ensure S2 ends after S2 starts
+                while ($s2End->lt($s2Start)) {
+                    $s2End->addDay();
+                }
+
+                // If the user clocked in after Session 1 ended, they are in Session 2.
+                $officialEnd = ($actualIn->gte($s1End)) ? $s2End : $s1End;
+
+                // If they stay past the official end, we only count until 5am.
+                // If they leave early, we count until their actual out time.
+                $effectiveOut = $actualOut->gt($officialEnd) ? $officialEnd : $actualOut;
+
+                $workMinutes = max(0, $actualIn->diffInMinutes($effectiveOut, false));
+            }
+        }
 
         DtrLog::create([
-            'user_id' => Auth::id(),
+            'user_id' => $user->id,
             'shift_id' => $user->shift_id,
             'type' => $type,
-            'recorded_at' => now(),
-            'work_date' => $this->getBusinessDate(),
+            'recorded_at' => $now,
+            'work_date' => $workDate,
+            'late_minutes' => $lateMinutes,
+            'work_minutes' => $workMinutes,
         ]);
     }
 
-    //function to display the widgets
+    // function to display the widgets
     protected function getHeaderWidgets(): array
     {
         return [
-            DtrStatsWidget::class
+            DtrStatsWidget::class,
         ];
     }
 }

@@ -23,6 +23,7 @@ class Attendances extends Model
     ];
 
     use SoftDeletes;
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
