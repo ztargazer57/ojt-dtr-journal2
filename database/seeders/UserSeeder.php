@@ -17,6 +17,7 @@ class UserSeeder extends Seeder
         //
         $dayShiftId = Shift::where('name', 'Day Shift')->value('id');
         $nightShiftId = Shift::where('name', 'Night Shift')->value('id');
+        $midShiftId = Shift::where('name', 'Mid Shift')->value('id');
 
         $users = [
             [
@@ -35,7 +36,7 @@ class UserSeeder extends Seeder
                 'name' => 'Mary Grace Rosell',
                 'email' => 'mary@example.com',
                 'password' => Hash::make('password'),
-                'shift_id' => $dayShiftId,
+                'shift_id' => $midShiftId,
             ],
             [
                 'name' => 'John Mhell',
@@ -66,7 +67,12 @@ class UserSeeder extends Seeder
                 'email' => 'roselyn@example.com',
                 'password' => Hash::make('password'),
                 'shift_id' => $dayShiftId,
-
+            ],
+            [
+                'name' => 'Mid Shift Intern',
+                'email' => 'mid@example.com',
+                'password' => Hash::make('password'),
+                'shift_id' => $midShiftId,
             ],
         ];
 

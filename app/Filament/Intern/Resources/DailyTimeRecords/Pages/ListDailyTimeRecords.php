@@ -50,10 +50,10 @@ class ListDailyTimeRecords extends ListRecords
         $now = Carbon::now();
         $workDate = $this->getBusinessDate();
 
-        $s2End = Carbon::parse($workDate.' '.$shift->session_2_end);
+        $s2End = Carbon::parse($workDate . ' ' . $shift->session_2_end);
 
         // Handle night shift
-        $s1Start = Carbon::parse($workDate.' '.$shift->session_1_start);
+        $s1Start = Carbon::parse($workDate . ' ' . $shift->session_1_start);
         if ($s2End->lt($s1Start)) {
             $s2End->addDay();
         }
@@ -67,7 +67,7 @@ class ListDailyTimeRecords extends ListRecords
         $logCount = $logs->count();
         $lastLog = $logs->last();
 
-        // disable button after session 2 end
+        // disable buttons after session 2 end, but remain enable if the user didn't time out yet
         if ($now->gte($s2End)) {
             if ($logCount === 0 || ($lastLog && $lastLog->type === 2)) {
                 return 4;
@@ -90,7 +90,7 @@ class ListDailyTimeRecords extends ListRecords
                 ->color('success')
                 ->requiresConfirmation()
                 ->disabled(! ($logCount === 0 || $logCount === 2))
-                ->action(fn () => $this->saveLog(1))
+                ->action(fn() => $this->saveLog(1))
                 ->successNotificationTitle('Clocked in successfully'),
 
             // For time out
@@ -99,7 +99,7 @@ class ListDailyTimeRecords extends ListRecords
                 ->color('info')
                 ->requiresConfirmation()
                 ->disabled(! ($logCount === 1 || $logCount === 3))
-                ->action(fn () => $this->saveLog(2))
+                ->action(fn() => $this->saveLog(2))
                 ->successNotificationTitle('Clocked out successfully'),
         ];
     }
@@ -115,28 +115,28 @@ class ListDailyTimeRecords extends ListRecords
         $lateMinutes = 0;
         $workMinutes = 0;
 
+        // Standardize Session boundaries for the current Business Date
+        $s1Start = Carbon::parse($workDate . ' ' . $shift->session_1_start);
+        $s1End   = Carbon::parse($workDate . ' ' . $shift->session_1_end);
+        $s2Start = Carbon::parse($workDate . ' ' . $shift->session_2_start);
+        $s2End   = Carbon::parse($workDate . ' ' . $shift->session_2_end);
+
+        // Handle Night Shift rollovers for boundaries
+        if ($s1End->lt($s1Start)) $s1End->addDay();
+        while ($s2Start->lt($s1End)) $s2Start->addDay();
+        while ($s2End->lt($s2Start)) $s2End->addDay();
+
         // time in
         if ($type === 1) {
 
-            $s1Start = Carbon::parse($workDate.' '.$shift->session_1_start);
-            $s2Start = Carbon::parse($workDate.' '.$shift->session_2_start);
+            // Calculate the "Switch Point" on which session the logs belongs
+            $gapMinutes = $s1End->diffInMinutes($s2Start);
+            $switchPoint = $s1End->copy()->addMinutes($gapMinutes / 2);
 
-            if ($s2Start->lt($s1Start)) {
-                $s2Start->addDay();
-            }
-
-            // check which session the user belongs
-            $targetStart = null;
-
-            // If current time is after session 2 start OR more than 4 hours after session 1 start
-            if ($now->gt($s1Start->copy()->addHours(4))) {
-                $targetStart = $s2Start;
-            } else {
-                $targetStart = $s1Start;
-            }
+            // If current time is past the midpoint, logs belongs to sessio; otherwise Session 1
+            $targetStart = ($now->gt($switchPoint)) ? $s2Start : $s1Start;
 
             if ($now->gt($targetStart)) {
-
                 $lateMinutes = $now->diffInMinutes($targetStart);
             }
 
@@ -149,37 +149,16 @@ class ListDailyTimeRecords extends ListRecords
                 ->first();
 
             if ($lastIn) {
+
                 $actualIn = Carbon::parse($lastIn->recorded_at);
-                $actualOut = $now;
 
-                // Use the date from the 'In' log to keep everything relative
-                $baseDate = $actualIn->format('Y-m-d');
+                // Calculate the "Switch Point" on which session the logs belongs
+                $gapMinutes = $s1End->diffInMinutes($s2Start);
+                $switchPoint = $s1End->copy()->addMinutes($gapMinutes / 2);
 
-                $s1Start = Carbon::parse($baseDate.' '.$shift->session_1_start);
-                $s1End = Carbon::parse($baseDate.' '.$shift->session_1_end);
-                $s2Start = Carbon::parse($baseDate.' '.$shift->session_2_start);
-                $s2End = Carbon::parse($baseDate.' '.$shift->session_2_end);
+                $officialEnd = ($actualIn->gt($switchPoint)) ? $s2End : $s1End;
 
-                if ($s1End->lt($s1Start)) {
-                    $s1End->addDay();
-                }
-
-                // Ensure S2 starts after S1 ends
-                while ($s2Start->lt($s1End)) {
-                    $s2Start->addDay();
-                }
-
-                // Ensure S2 ends after S2 starts
-                while ($s2End->lt($s2Start)) {
-                    $s2End->addDay();
-                }
-
-                // If the user clocked in after Session 1 ended, they are in Session 2.
-                $officialEnd = ($actualIn->gte($s1End)) ? $s2End : $s1End;
-
-                // If they stay past the official end, we only count until 5am.
-                // If they leave early, we count until their actual out time.
-                $effectiveOut = $actualOut->gt($officialEnd) ? $officialEnd : $actualOut;
+                $effectiveOut = $now->gt($officialEnd) ? $officialEnd : $now;
 
                 $workMinutes = max(0, $actualIn->diffInMinutes($effectiveOut, false));
             }
