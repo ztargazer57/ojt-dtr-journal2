@@ -48,7 +48,6 @@ return new class extends Migration
 
         Schema::table('admin_activities', function (Blueprint $table) {
             // Drop old foreign key and column
-            $table->dropForeign(['subject_id']);
             $table->dropColumn('subject_id');
             $table->dropColumn('subject_type');
 

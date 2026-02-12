@@ -16,7 +16,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users');
             $table->timestamps();
-            $table->text('subject_type');
+            $table->string('subject_type', 191);
             $table->enum('action', ['edited', 'viewed', 'certified', 'deleted']);
             $table->foreignId('subject_id');
             $table->index(['subject_type', 'subject_id']);
