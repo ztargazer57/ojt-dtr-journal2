@@ -23,6 +23,7 @@ return new class extends Migration
             $table->foreignId('certified_by')->nullable()->constrained('users');
             $table->string('signature')->nullable();
             $table->json('entries')->nullable();
+            $table->enum('track', ['development', 'designer', 'mixed'])->default('development');
             $table->timestamps();
             $table->softDeletes();
         });
